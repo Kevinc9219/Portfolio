@@ -1,0 +1,17 @@
+@model Company?
+@{ViewData["Title"] = "Stagebedrijf";}
+<h1>Stagebedrijf</h1>
+@if (Model == null)
+{
+    <div class="alert alert-info">Nog geen bedrijf ingevuld. <a asp-action="Create">Voeg bedrijf toe</a>.</div>
+}
+else
+{
+    <div class="card"><div class="card-body">
+        <h3>@Model.Name</h3>
+        <p><strong>Adres:</strong> @Model.Address</p>
+        <p><strong>Contactpersoon:</strong> @Model.ContactPerson</p>
+        <p><strong>Email:</strong> @Model.ContactEmail</p>
+        <p><strong>Telefoon:</strong> @Model.ContactPhone</p>
+    </div></div>
+}

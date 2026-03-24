@@ -1,0 +1,20 @@
+@model Product
+@{ViewData["Title"] = "Nieuw Product";}
+<h1>Nieuw Product</h1>
+<form asp-action="Create" method="post" class="row g-3">
+    <div class="col-md-6"><label asp-for="Name" class="form-label"></label><input asp-for="Name" class="form-control" /><span asp-validation-for="Name" class="text-danger"></span></div>
+    <div class="col-md-6"><label asp-for="SKU" class="form-label"></label><input asp-for="SKU" class="form-control" /><span asp-validation-for="SKU" class="text-danger"></span></div>
+    <div class="col-md-4"><label asp-for="Price" class="form-label"></label><input asp-for="Price" class="form-control" /></div>
+    <div class="col-md-4"><label asp-for="StockQuantity" class="form-label"></label><input asp-for="StockQuantity" class="form-control" /></div>
+    <div class="col-md-4"><label asp-for="CategoryId" class="form-label">Categorie</label>
+        <select asp-for="CategoryId" class="form-select">
+            @foreach (var c in (IEnumerable<Category>)ViewBag.Categories) { <option value="@c.Id">@c.Name</option> }
+        </select>
+    </div>
+    <div class="col-md-4"><label asp-for="SupplierId" class="form-label">Leverancier</label>
+        <select asp-for="SupplierId" class="form-select">
+            @foreach (var s in (IEnumerable<Supplier>)ViewBag.Suppliers) { <option value="@s.Id">@s.Name</option> }
+        </select>
+    </div>
+    <div class="col-12"><button type="submit" class="btn btn-primary">Opslaan</button> <a asp-action="Index" class="btn btn-secondary">Annuleren</a></div>
+</form>

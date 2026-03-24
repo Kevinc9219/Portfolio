@@ -1,0 +1,5 @@
+@model Supplier
+@{ViewData["Title"] = "Leverancier Verwijderen";}
+<h1>Leverancier Verwijderen</h1>
+<div class="alert alert-danger">Weet je zeker dat je leverancier <strong>@Model.Name</strong> wilt verwijderen?</div>
+<form asp-action="Delete" method="post"><input type="hidden" asp-for="Id" /><button type="submit" class="btn btn-danger">Ja</button> <a asp-action="Index" class="btn btn-secondary">Annuleren</a></form>

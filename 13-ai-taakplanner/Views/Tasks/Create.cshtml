@@ -1,0 +1,84 @@
+@model TaskItem
+@{ViewData["Title"] = "Nieuwe Taak";}
+<div class="row">
+<div class="col-md-7">
+    <h1>Nieuwe Taak</h1>
+    <form asp-action="Create" method="post" id="taskForm">
+        <div class="mb-3">
+            <label asp-for="Title" class="form-label">Taakomschrijving</label>
+            <input asp-for="Title" id="taskTitle" class="form-control" placeholder="Beschrijf je taak in gewone taal..." autocomplete="off" />
+        </div>
+        <input type="hidden" name="aiPriorityStr" id="aiPriorityHidden" />
+        <input type="hidden" name="aiCategory" id="aiCategoryHidden" />
+        <input type="hidden" name="aiDuration" id="aiDurationHidden" value="0" />
+        <input type="hidden" name="aiDeadline" id="aiDeadlineHidden" />
+        <input type="hidden" name="aiReasoning" id="aiReasoningHidden" />
+        <div class="mb-3">
+            <label class="form-label">Prioriteit (optioneel aanpassen)</label>
+            <select asp-for="UserPriority" class="form-select">
+                <option value="">Gebruik AI-suggestie</option>
+                @foreach (Priority p in Enum.GetValues(typeof(Priority))) { <option value="@((int)p)">@p</option> }
+            </select>
+        </div>
+        <button type="submit" class="btn btn-primary">Taak opslaan</button>
+        <a asp-action="Index" class="btn btn-secondary">Annuleren</a>
+    </form>
+</div>
+<div class="col-md-5">
+    <div id="aiPreview" class="card d-none">
+        <div class="card-header bg-dark text-white"><i class="bi bi-robot"></i> AI Analyse</div>
+        <div class="card-body">
+            <div id="loadingSpinner" class="text-center d-none"><div class="spinner-border text-primary"></div><p>Analyseren...</p></div>
+            <div id="aiResult">
+                <p><strong>Prioriteit:</strong> <span id="aiPriority" class="badge fs-6"></span></p>
+                <p><strong>Categorie:</strong> <span id="aiCategory"></span></p>
+                <p><strong>Geschatte duur:</strong> <span id="aiDuration"></span> minuten</p>
+                <p><strong>Deadline:</strong> <span id="aiDeadline">–</span></p>
+                <p class="fst-italic text-muted" id="aiReasoning"></p>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+
+@section Scripts {
+<script>
+const titleInput = document.getElementById('taskTitle');
+let debounceTimer;
+titleInput.addEventListener('blur', () => analyzeTask(titleInput.value));
+titleInput.addEventListener('input', () => {
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(() => { if (titleInput.value.length > 10) analyzeTask(titleInput.value); }, 800);
+});
+async function analyzeTask(title) {
+    if (!title || title.length < 5) return;
+    document.getElementById('aiPreview').classList.remove('d-none');
+    document.getElementById('loadingSpinner').classList.remove('d-none');
+    document.getElementById('aiResult').classList.add('d-none');
+    try {
+        const res = await fetch('/api/tasks/analyze', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ title })
+        });
+        const data = await res.json();
+        const colors = { hoog: 'danger', midden: 'warning', laag: 'success' };
+        document.getElementById('aiPriority').textContent = data.priority;
+        document.getElementById('aiPriority').className = 'badge fs-6 bg-' + (colors[data.priority] || 'secondary');
+        document.getElementById('aiCategory').textContent = data.category;
+        document.getElementById('aiDuration').textContent = data.estimatedMinutes;
+        document.getElementById('aiDeadline').textContent = data.deadline || '–';
+        document.getElementById('aiReasoning').textContent = data.reasoning;
+        document.getElementById('aiPriorityHidden').value = data.priority;
+        document.getElementById('aiCategoryHidden').value = data.category;
+        document.getElementById('aiDurationHidden').value = data.estimatedMinutes;
+        document.getElementById('aiDeadlineHidden').value = data.deadline || '';
+        document.getElementById('aiReasoningHidden').value = data.reasoning;
+        document.getElementById('loadingSpinner').classList.add('d-none');
+        document.getElementById('aiResult').classList.remove('d-none');
+    } catch (e) {
+        document.getElementById('aiPreview').classList.add('d-none');
+    }
+}
+</script>
+}

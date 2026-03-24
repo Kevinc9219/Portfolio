@@ -1,0 +1,17 @@
+@model StageDay
+@{ViewData["Title"] = "Stagedag Toevoegen";}
+<h1>Stagedag Toevoegen</h1>
+<form asp-action="Create" method="post" class="row g-3">
+    <div class="col-md-4"><label asp-for="Date" class="form-label"></label><input asp-for="Date" type="date" class="form-control" /></div>
+    <div class="col-md-4"><label asp-for="HoursWorked" class="form-label">Uren gewerkt</label><input asp-for="HoursWorked" class="form-control" /></div>
+    <div class="col-md-4"><label asp-for="MoodScore" class="form-label">Stemming (1–5)</label><input asp-for="MoodScore" type="range" min="1" max="5" class="form-range" /></div>
+    <div class="col-12"><label asp-for="Activities" class="form-label">Activiteiten</label><textarea asp-for="Activities" class="form-control" rows="3"></textarea></div>
+    <div class="col-12"><label asp-for="LearningPoints" class="form-label">Leerpunten</label><textarea asp-for="LearningPoints" class="form-control" rows="3"></textarea></div>
+    <div class="col-12"><label class="form-label">Competenties</label>
+        <div class="row">
+        @foreach (var c in (IEnumerable<Competence>)ViewBag.Competences)
+        { <div class="col-md-4"><div class="form-check"><input type="checkbox" name="selectedCompetences" value="@c.Id" class="form-check-input" /><label class="form-check-label">@c.Name</label></div></div> }
+        </div>
+    </div>
+    <div class="col-12"><button type="submit" class="btn btn-success">Opslaan</button> <a asp-action="Index" class="btn btn-secondary">Annuleren</a></div>
+</form>

@@ -1,0 +1,11 @@
+@model StageDay
+@{ViewData["Title"] = "Dag Details";}
+<h1>Stagedag @Model.Date.ToString("dd/MM/yyyy")</h1>
+<div class="card mb-3"><div class="card-body">
+    <p><strong>Uren:</strong> @Model.HoursWorked</p>
+    <p><strong>Stemming:</strong> @new string('⭐', Model.MoodScore)</p>
+    <p><strong>Activiteiten:</strong> @Model.Activities</p>
+    <p><strong>Leerpunten:</strong> @Model.LearningPoints</p>
+    <p><strong>Competenties:</strong> @string.Join(", ", Model.DayCompetences.Select(dc => dc.Competence?.Name))</p>
+</div></div>
+<a asp-action="Index" class="btn btn-secondary">← Terug</a>

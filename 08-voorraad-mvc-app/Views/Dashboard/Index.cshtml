@@ -1,0 +1,16 @@
+@{ViewData["Title"] = "Dashboard";}
+<h1 class="mb-4"><i class="bi bi-speedometer2"></i> Dashboard</h1>
+<div class="row g-3 mb-4">
+    <div class="col-md-3"><div class="card text-white bg-primary"><div class="card-body"><h5>Producten</h5><h2>@ViewBag.TotalProducts</h2></div></div></div>
+    <div class="col-md-3"><div class="card text-white bg-warning"><div class="card-body"><h5>Lage Voorraad</h5><h2>@ViewBag.LowStock</h2></div></div></div>
+    <div class="col-md-3"><div class="card text-white bg-info"><div class="card-body"><h5>Open Bestellingen</h5><h2>@ViewBag.OpenOrders</h2></div></div></div>
+    <div class="col-md-3"><div class="card text-white bg-success"><div class="card-body"><h5>Leveranciers</h5><h2>@ViewBag.TotalSuppliers</h2></div></div></div>
+</div>
+@if (ViewBag.LowStockProducts != null && ((IEnumerable<Product>)ViewBag.LowStockProducts).Any())
+{
+    <div class="alert alert-warning"><h5>⚠️ Lage voorraad (< 10 stuks)</h5>
+    <table class="table table-sm"><thead><tr><th>Product</th><th>Categorie</th><th>Voorraad</th></tr></thead><tbody>
+    @foreach (var p in (IEnumerable<Product>)ViewBag.LowStockProducts)
+    { <tr><td>@p.Name</td><td>@p.Category?.Name</td><td class="text-danger fw-bold">@p.StockQuantity</td></tr> }
+    </tbody></table></div>
+}

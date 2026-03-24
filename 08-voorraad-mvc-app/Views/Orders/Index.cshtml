@@ -1,0 +1,26 @@
+@model IEnumerable<Order>
+@{ViewData["Title"] = "Bestellingen";}
+<div class="d-flex justify-content-between mb-3">
+    <h1>Bestellingen</h1>
+    <a asp-action="Create" class="btn btn-primary">+ Nieuwe Bestelling</a>
+</div>
+<table class="table table-hover">
+    <thead class="table-dark"><tr><th>Product</th><th>Hoeveelheid</th><th>Datum</th><th>Status</th><th>Acties</th></tr></thead>
+    <tbody>
+    @foreach (var o in Model)
+    {
+        var badge = o.Status == OrderStatus.Delivered ? "success" : o.Status == OrderStatus.Shipped ? "info" : "warning";
+        <tr><td>@o.Product?.Name</td><td>@o.Quantity</td><td>@o.OrderDate.ToString("dd/MM/yyyy")</td>
+        <td><span class="badge bg-@badge">@o.Status</span></td>
+        <td>
+            <form asp-action="UpdateStatus" method="post" class="d-inline">
+                <input type="hidden" name="id" value="@o.Id" />
+                <select name="status" class="form-select form-select-sm d-inline w-auto" onchange="this.form.submit()">
+                    @foreach (OrderStatus s in Enum.GetValues(typeof(OrderStatus)))
+                    { <option value="@s" @(o.Status == s ? "selected" : "")>@s</option> }
+                </select>
+            </form>
+        </td></tr>
+    }
+    </tbody>
+</table>

@@ -1,0 +1,13 @@
+@{ViewData["Title"] = "Dashboard";}
+<h1>Dashboard</h1>
+<div class="alert alert-success">Welkom terug, <strong>@User.Identity?.Name</strong>!</div>
+<div class="row g-3">
+    <div class="col-md-4"><div class="card"><div class="card-body"><h5>Mijn Rol</h5><span class="badge bg-primary fs-6">@(User.IsInRole("Admin") ? "Admin" : User.IsInRole("Manager") ? "Manager" : "Gebruiker")</span></div></div></div>
+    <div class="col-md-4"><div class="card"><div class="card-body"><h5>Toegang</h5>
+        <ul class="list-unstyled">
+            <li>✅ Dashboard</li>
+            <li>@(User.IsInRole("Admin") || User.IsInRole("Manager") ? "✅" : "❌") Rapporten</li>
+            <li>@(User.IsInRole("Admin") ? "✅" : "❌") Gebruikersbeheer</li>
+        </ul>
+    </div></div></div>
+</div>

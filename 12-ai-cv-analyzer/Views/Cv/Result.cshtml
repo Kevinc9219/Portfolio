@@ -1,0 +1,40 @@
+@model AnalysisResult
+@{ViewData["Title"] = "Analyseresultaat";}
+<h1><i class="bi bi-clipboard-check"></i> CV Analyse</h1>
+<div class="alert alert-info">@Model.Summary</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-3"><div class="card text-center"><div class="card-body"><h6>Profiel</h6><h2 class="text-primary">@Model.Scores.Profile/10</h2></div></div></div>
+    <div class="col-md-3"><div class="card text-center"><div class="card-body"><h6>Ervaring</h6><h2 class="text-success">@Model.Scores.Experience/10</h2></div></div></div>
+    <div class="col-md-3"><div class="card text-center"><div class="card-body"><h6>Opleiding</h6><h2 class="text-info">@Model.Scores.Education/10</h2></div></div></div>
+    <div class="col-md-3"><div class="card text-center"><div class="card-body"><h6>Skills</h6><h2 class="text-warning">@Model.Scores.Skills/10</h2></div></div></div>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card mb-3">
+            <div class="card-header bg-success text-white">✅ Top Sterktes</div>
+            <ul class="list-group list-group-flush">
+                @foreach (var s in Model.Strengths) { <li class="list-group-item">@s</li> }
+            </ul>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card mb-3">
+            <div class="card-header bg-warning">🎯 Passende Functies</div>
+            <ul class="list-group list-group-flush">
+                @foreach (var j in Model.MatchingJobs) { <li class="list-group-item"><i class="bi bi-briefcase"></i> @j</li> }
+            </ul>
+        </div>
+    </div>
+</div>
+
+<div class="card mb-3">
+    <div class="card-header bg-danger text-white">🔧 Verbeterpunten</div>
+    <div class="card-body">
+        @foreach (var imp in Model.Improvements)
+        { <div class="mb-2"><strong>@imp.Point</strong><p class="text-muted mb-0">→ @imp.Suggestion</p></div> }
+    </div>
+</div>
+<a asp-action="Index" class="btn btn-primary">Nieuw CV analyseren</a>
+<a asp-action="History" class="btn btn-secondary">Bekijk geschiedenis</a>

@@ -1,0 +1,9 @@
+@{ViewData["Title"] = "Home";}
+<div class="jumbotron text-center py-5">
+    <h1 class="display-4"><i class="bi bi-shield-check"></i> Login & Rollen Demo</h1>
+    <p class="lead">ASP.NET Core Identity met rolgebaseerde toegangscontrole</p>
+    <hr />
+    <p>Test accounts: <code>admin@demo.com / Admin123!</code> | <code>manager@demo.com / Manager123!</code> | <code>user@demo.com / User123!</code></p>
+    <a asp-controller="Account" asp-action="Login" class="btn btn-primary btn-lg">Inloggen</a>
+    <a asp-controller="Account" asp-action="Register" class="btn btn-outline-primary btn-lg">Registreren</a>
+</div>

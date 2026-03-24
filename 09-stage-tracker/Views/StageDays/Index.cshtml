@@ -1,0 +1,26 @@
+@model IEnumerable<StageDay>
+@{ViewData["Title"] = "Stagedagen";}
+<div class="d-flex justify-content-between mb-3">
+    <h1>Alle Stagedagen</h1>
+    <a asp-action="Create" class="btn btn-success">+ Dag Toevoegen</a>
+</div>
+<table class="table table-hover">
+    <thead class="table-dark"><tr><th>Datum</th><th>Uren</th><th>Stemming</th><th>Competenties</th><th>Acties</th></tr></thead>
+    <tbody>
+    @foreach (var d in Model)
+    {
+        <tr>
+            <td>@d.Date.ToString("dd/MM/yyyy")</td><td>@d.HoursWorked u</td>
+            <td>@new string('⭐', d.MoodScore)</td>
+            <td>@string.Join(", ", d.DayCompetences.Select(dc => dc.Competence?.Name))</td>
+            <td>
+                <a asp-action="Details" asp-route-id="@d.Id" class="btn btn-sm btn-info">Details</a>
+                <form asp-action="Delete" method="post" class="d-inline">
+                    <input type="hidden" name="id" value="@d.Id" />
+                    <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Verwijderen?')">X</button>
+                </form>
+            </td>
+        </tr>
+    }
+    </tbody>
+</table>

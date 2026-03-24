@@ -1,0 +1,15 @@
+@model IEnumerable<CvAnalysis>
+@{ViewData["Title"] = "Analysegeschiedenis";}
+<h1>Analysegeschiedenis</h1>
+@if (!Model.Any())
+{ <div class="alert alert-info">Nog geen analyses uitgevoerd.</div> }
+else
+{
+    <table class="table table-hover">
+        <thead class="table-dark"><tr><th>Datum</th><th>CV Preview</th><th>Samenvatting</th></tr></thead>
+        <tbody>
+        @foreach (var a in Model)
+        { <tr><td>@a.AnalyzedAt.ToString("dd/MM/yyyy HH:mm")</td><td>@(a.CvText.Length > 80 ? a.CvText[..80] + "..." : a.CvText)</td><td>@a.Summary</td></tr> }
+        </tbody>
+    </table>
+}

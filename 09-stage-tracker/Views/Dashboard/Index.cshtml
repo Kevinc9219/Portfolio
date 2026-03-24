@@ -1,0 +1,28 @@
+@{ViewData["Title"] = "Dashboard";}
+<h1 class="mb-4">📊 Stage Voortgang</h1>
+<div class="row g-3 mb-4">
+    <div class="col-md-3"><div class="card text-white bg-success"><div class="card-body"><h6>Voltooide Dagen</h6><h2>@ViewBag.CompletedDays / 60</h2></div></div></div>
+    <div class="col-md-3"><div class="card text-white bg-warning"><div class="card-body"><h6>Resterende Dagen</h6><h2>@ViewBag.RemainingDays</h2></div></div></div>
+    <div class="col-md-3"><div class="card text-white bg-info"><div class="card-body"><h6>Gem. Uren/Dag</h6><h2>@ViewBag.AvgHours u</h2></div></div></div>
+    <div class="col-md-3"><div class="card text-white bg-primary"><div class="card-body"><h6>Gem. Stemming</h6><h2>@ViewBag.AvgMood / 5</h2></div></div></div>
+</div>
+<div class="card mb-4">
+    <div class="card-body">
+        <h5>Voortgang</h5>
+        <div class="progress" style="height:30px">
+            <div class="progress-bar bg-success" style="width:@ViewBag.Progress%">@ViewBag.Progress%</div>
+        </div>
+        <small class="text-muted">Start: @ViewBag.StartDate — Verwachte einddatum: @ViewBag.ExpectedEnd</small>
+    </div>
+</div>
+<div class="d-flex justify-content-between mb-2"><h4>Recente stagedagen</h4><a asp-controller="StageDays" asp-action="Create" class="btn btn-success">+ Dag toevoegen</a></div>
+@if (ViewBag.RecentDays != null)
+{
+    <table class="table table-hover">
+        <thead><tr><th>Datum</th><th>Uren</th><th>Stemming</th><th>Activiteiten</th></tr></thead>
+        <tbody>
+        @foreach (var d in (IEnumerable<StageDay>)ViewBag.RecentDays)
+        { <tr><td>@d.Date.ToString("dd/MM/yyyy")</td><td>@d.HoursWorked</td><td>@("⭐".PadRight(d.MoodScore, '⭐').Substring(0, d.MoodScore))</td><td>@(d.Activities.Length > 60 ? d.Activities[..60] + "..." : d.Activities)</td></tr> }
+        </tbody>
+    </table>
+}

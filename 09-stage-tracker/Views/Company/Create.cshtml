@@ -1,0 +1,11 @@
+@model Company
+@{ViewData["Title"] = "Bedrijf Toevoegen";}
+<h1>Stagebedrijf Toevoegen</h1>
+<form asp-action="Create" method="post" class="row g-3">
+    <div class="col-md-6"><label asp-for="Name" class="form-label"></label><input asp-for="Name" class="form-control" /></div>
+    <div class="col-md-6"><label asp-for="Address" class="form-label"></label><input asp-for="Address" class="form-control" /></div>
+    <div class="col-md-4"><label asp-for="ContactPerson" class="form-label"></label><input asp-for="ContactPerson" class="form-control" /></div>
+    <div class="col-md-4"><label asp-for="ContactEmail" class="form-label"></label><input asp-for="ContactEmail" class="form-control" /></div>
+    <div class="col-md-4"><label asp-for="ContactPhone" class="form-label"></label><input asp-for="ContactPhone" class="form-control" /></div>
+    <div class="col-12"><button type="submit" class="btn btn-success">Opslaan</button></div>
+</form>
