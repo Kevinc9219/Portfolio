@@ -1,0 +1,5 @@
+C:\Users\kevin\Portfolio\02-rekenmachine-winforms\obj\Debug\net6.0-windows\02-rekenmachine-winforms.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\kevin\Portfolio\02-rekenmachine-winforms\obj\Debug\net6.0-windows\02-rekenmachine-winforms.AssemblyInfoInputs.cache
+C:\Users\kevin\Portfolio\02-rekenmachine-winforms\obj\Debug\net6.0-windows\02-rekenmachine-winforms.AssemblyInfo.cs
+C:\Users\kevin\Portfolio\02-rekenmachine-winforms\obj\Debug\net6.0-windows\02-rekenmachine-winforms.csproj.CoreCompileInputs.cache
+C:\Users\kevin\Portfolio\02-rekenmachine-winforms\obj\Debug\net6.0-windows\02-rekenmachine-winforms.sourcelink.json

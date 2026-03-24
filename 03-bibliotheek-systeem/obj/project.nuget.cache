@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "dgSpecHash": "5x6DU/GvmkQ=",
+  "success": true,
+  "projectFilePath": "C:\\Users\\kevin\\Portfolio\\03-bibliotheek-systeem\\BibliotheekSysteem.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\kevin\\.nuget\\packages\\newtonsoft.json\\13.0.4\\newtonsoft.json.13.0.4.nupkg.sha512"
+  ],
+  "logs": []
+}

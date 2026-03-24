@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Domotica Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    /* ===== CSS VARIABLES ===== */
+    :root {
+      --bg-primary:   #0f0f1a;
+      --bg-secondary: #1a1a2e;
+      --bg-card:      #16213e;
+      --bg-card-hover:#1e2d50;
+      --accent:       #7c3aed;
+      --accent-light: #a78bfa;
+      --accent-blue:  #3b82f6;
+      --on-color:     #f59e0b;
+      --text-primary: #f1f5f9;
+      --text-secondary:#94a3b8;
+      --border:       #2d3a5e;
+      --success:      #10b981;
+      --danger:       #ef4444;
+      --shadow:       0 4px 24px rgba(0,0,0,0.4);
+      --radius:       14px;
+      --transition:   all 0.25s ease;
+    }
+    .light-mode {
+      --bg-primary:   #f0f4ff;
+      --bg-secondary: #e2e8f8;
+      --bg-card:      #ffffff;
+      --bg-card-hover:#f8f9ff;
+      --text-primary: #1e293b;
+      --text-secondary:#64748b;
+      --border:       #cbd5e1;
+      --shadow:       0 4px 24px rgba(0,0,0,0.08);
+    }
+
+    /* ===== RESET & BASE ===== */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      min-height: 100vh;
+      transition: var(--transition);
+    }
+
+    /* ===== STATUS BAR ===== */
+    #status-bar {
+      background: var(--bg-secondary);
+      border-bottom: 1px solid var(--border);
+      padding: 10px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 13px;
+      color: var(--text-secondary);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    #status-bar .status-left { display: flex; align-items: center; gap: 20px; }
+    #status-bar .status-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--success);
+      box-shadow: 0 0 6px var(--success);
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+    #clock { font-weight: 600; color: var(--accent-light); font-size: 14px; }
+    #active-count { color: var(--on-color); font-weight: 500; }
+
+    /* ===== HEADER ===== */
+    header {
+      background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-primary) 100%);
+      padding: 28px 24px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    header h1 {
+      font-size: 26px;
+      font-weight: 700;
+      background: linear-gradient(90deg, var(--accent-light), var(--accent-blue));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    header p { font-size: 13px; color: var(--text-secondary); margin-top: 4px; }
+
+    /* ===== DARK MODE TOGGLE ===== */
+    .toggle-dark {
+      display: flex; align-items: center; gap: 10px;
+      cursor: pointer;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 30px;
+      padding: 8px 16px;
+      font-size: 13px;
+      color: var(--text-primary);
+      transition: var(--transition);
+      user-select: none;
+    }
+    .toggle-dark:hover { border-color: var(--accent); }
+    .toggle-dark .icon { font-size: 16px; }
+    .toggle-switch {
+      width: 36px; height: 20px;
+      background: var(--border);
+      border-radius: 20px;
+      position: relative;
+      transition: var(--transition);
+    }
+    .toggle-switch::after {
+      content: '';
+      position: absolute;
+      left: 3px; top: 3px;
+      width: 14px; height: 14px;
+      border-radius: 50%;
+      background: var(--text-secondary);
+      transition: var(--transition);
+    }
+    .toggle-dark.active .toggle-switch { background: var(--accent); }
+    .toggle-dark.active .toggle-switch::after { left: 19px; background: #fff; }
+
+    /* ===== MAIN LAYOUT ===== */
+    main { padding: 28px 24px; max-width: 1400px; margin: 0 auto; }
+    .section-title {
+      font-size: 13px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text-secondary);
+      margin-bottom: 14px;
+    }
+
+    /* ===== ROOMS GRID ===== */
+    .rooms-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 20px;
+      margin-bottom: 36px;
+    }
+
+    /* ===== ROOM CARD ===== */
+    .room-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 22px;
+      transition: var(--transition);
+      box-shadow: var(--shadow);
+      position: relative;
+      overflow: hidden;
+    }
+    .room-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--accent), var(--accent-blue));
+      opacity: 0;
+      transition: var(--transition);
+    }
+    .room-card:hover { background: var(--bg-card-hover); }
+    .room-card:hover::before { opacity: 1; }
+    .room-card.has-active::before { opacity: 1; }
+
+    .room-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 18px;
+    }
+    .room-name-area { display: flex; align-items: center; gap: 10px; }
+    .room-icon { font-size: 22px; }
+    .room-name { font-size: 16px; font-weight: 600; }
+    .room-temp {
+      font-size: 13px;
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .temp-display {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--accent-light);
+    }
+    .temp-controls { display: flex; flex-direction: column; gap: 3px; }
+    .temp-btn {
+      background: var(--border);
+      border: none;
+      color: var(--text-primary);
+      width: 22px; height: 22px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 12px;
+      line-height: 1;
+      transition: var(--transition);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .temp-btn:hover { background: var(--accent); }
+
+    /* ===== LAMPS ===== */
+    .lamps-section { margin-top: 14px; }
+    .lamps-label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: var(--text-secondary);
+      margin-bottom: 10px;
+    }
+    .lamps-grid { display: flex; gap: 10px; flex-wrap: wrap; }
+    .lamp-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 5px;
+      background: var(--bg-secondary);
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 14px;
+      cursor: pointer;
+      transition: var(--transition);
+      min-width: 64px;
+      color: var(--text-secondary);
+      font-size: 11px;
+      font-weight: 500;
+    }
+    .lamp-btn .lamp-icon { font-size: 20px; transition: var(--transition); }
+    .lamp-btn:hover { border-color: var(--accent-light); color: var(--text-primary); }
+    .lamp-btn.on {
+      background: rgba(245, 158, 11, 0.12);
+      border-color: var(--on-color);
+      color: var(--on-color);
+      box-shadow: 0 0 12px rgba(245,158,11,0.2);
+    }
+    .lamp-btn.on .lamp-icon { filter: drop-shadow(0 0 6px #f59e0b); }
+
+    /* ===== BOTTOM ROW ===== */
+    .bottom-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+    @media (max-width: 900px) { .bottom-row { grid-template-columns: 1fr; } }
+
+    /* ===== PANEL CARD ===== */
+    .panel-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+      box-shadow: var(--shadow);
+    }
+    .panel-card h2 {
+      font-size: 15px;
+      font-weight: 600;
+      margin-bottom: 18px;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* ===== CHART ===== */
+    .chart-wrapper { position: relative; height: 220px; }
+
+    /* ===== SCHEDULE ===== */
+    .schedule-list { display: flex; flex-direction: column; gap: 10px; }
+    .schedule-item {
+      display: grid;
+      grid-template-columns: 1fr 1fr 80px 36px;
+      align-items: center;
+      gap: 10px;
+      background: var(--bg-secondary);
+      border-radius: 10px;
+      padding: 12px 14px;
+      border: 1px solid var(--border);
+    }
+    .schedule-item select,
+    .schedule-item input[type="time"] {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      color: var(--text-primary);
+      border-radius: 7px;
+      padding: 6px 8px;
+      font-size: 12px;
+      font-family: 'Inter', sans-serif;
+      outline: none;
+      transition: var(--transition);
+    }
+    .schedule-item select:focus,
+    .schedule-item input[type="time"]:focus { border-color: var(--accent); }
+    .schedule-action-badge {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 20px;
+      text-align: center;
+    }
+    .schedule-action-badge.on { background: rgba(245,158,11,0.15); color: var(--on-color); }
+    .schedule-action-badge.off { background: rgba(100,116,139,0.15); color: var(--text-secondary); }
+    .schedule-delete {
+      background: rgba(239,68,68,0.1);
+      border: 1px solid rgba(239,68,68,0.3);
+      color: var(--danger);
+      border-radius: 7px;
+      width: 32px; height: 32px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: var(--transition);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .schedule-delete:hover { background: var(--danger); color: #fff; }
+    .add-schedule-btn {
+      margin-top: 12px;
+      background: rgba(124,58,237,0.12);
+      border: 1.5px dashed var(--accent);
+      color: var(--accent-light);
+      border-radius: 10px;
+      padding: 10px;
+      width: 100%;
+      cursor: pointer;
+      font-size: 13px;
+      font-family: 'Inter', sans-serif;
+      transition: var(--transition);
+    }
+    .add-schedule-btn:hover { background: rgba(124,58,237,0.22); }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 600px) {
+      header { flex-direction: column; gap: 14px; align-items: flex-start; }
+      .rooms-grid { grid-template-columns: 1fr; }
+      .schedule-item { grid-template-columns: 1fr 1fr; grid-template-rows: auto auto; }
+      .schedule-item .schedule-action-badge { grid-column: 1; }
+      .schedule-item .schedule-delete { grid-column: 2; justify-self: end; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- STATUS BAR -->
+  <div id="status-bar">
+    <div class="status-left">
+      <span class="status-dot"></span>
+      <span id="clock">--:--:--</span>
+      <span id="active-count">0 apparaten actief</span>
+    </div>
+    <span style="color:var(--text-secondary); font-size:12px;">Smart Home Simulator</span>
+  </div>
+
+  <!-- HEADER -->
+  <header>
+    <div>
+      <h1>🏠 Domotica Dashboard</h1>
+      <p>Beheer je slimme woning</p>
+    </div>
+    <div class="toggle-dark" id="darkToggle" onclick="toggleDarkMode()">
+      <span class="icon" id="darkIcon">🌙</span>
+      <span id="darkLabel">Dark</span>
+      <div class="toggle-switch"></div>
+    </div>
+  </header>
+
+  <main>
+    <!-- ROOMS -->
+    <div class="section-title">Kamers</div>
+    <div class="rooms-grid" id="roomsGrid"></div>
+
+    <!-- BOTTOM ROW -->
+    <div class="bottom-row">
+      <!-- CHART -->
+      <div class="panel-card">
+        <h2>⚡ Energieverbruik — afgelopen 7 dagen</h2>
+        <div class="chart-wrapper">
+          <canvas id="energyChart"></canvas>
+        </div>
+      </div>
+
+      <!-- SCHEDULE -->
+      <div class="panel-card">
+        <h2>🕐 Tijdschema's</h2>
+        <div class="schedule-list" id="scheduleList"></div>
+        <button class="add-schedule-btn" onclick="addSchedule()">+ Tijdschema toevoegen</button>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    // ===== STATE =====
+    // Demo: avondscenario — living en keuken actief, slaapkamer rustig
+    const DEFAULT_STATE = {
+      living:     { lamp1: true,  lamp2: true,  lamp3: false, temp: 21 },
+      slaapkamer: { lamp1: false, lamp2: true,  temp: 18 },
+      keuken:     { lamp1: true,  lamp2: false, temp: 20 },
+      badkamer:   { lamp1: true,  temp: 23 },
+    };
+
+    const DEFAULT_SCHEDULES = [
+      { room: 'living',     time: '07:00', action: 'on'  },
+      { room: 'keuken',     time: '07:15', action: 'on'  },
+      { room: 'badkamer',   time: '07:00', action: 'on'  },
+      { room: 'keuken',     time: '08:30', action: 'off' },
+      { room: 'badkamer',   time: '08:00', action: 'off' },
+      { room: 'living',     time: '17:30', action: 'on'  },
+      { room: 'keuken',     time: '17:30', action: 'on'  },
+      { room: 'slaapkamer', time: '22:30', action: 'on'  },
+      { room: 'living',     time: '23:00', action: 'off' },
+      { room: 'keuken',     time: '22:00', action: 'off' },
+    ];
+
+    const ROOM_META = {
+      living:     { label: 'Living',     icon: '🛋️', lamps: ['Hoofd', 'Sfeer', 'Lees'] },
+      slaapkamer: { label: 'Slaapkamer', icon: '🛏️', lamps: ['Plafond', 'Nacht'] },
+      keuken:     { label: 'Keuken',     icon: '🍳', lamps: ['Werkblad', 'Plafond'] },
+      badkamer:   { label: 'Badkamer',   icon: '🚿', lamps: ['Spiegel'] },
+    };
+
+    let state     = JSON.parse(localStorage.getItem('homeState'))     || JSON.parse(JSON.stringify(DEFAULT_STATE));
+    let schedules = JSON.parse(localStorage.getItem('homeSchedules')) || JSON.parse(JSON.stringify(DEFAULT_SCHEDULES));
+
+    function resetDemo() {
+      localStorage.removeItem('homeState');
+      localStorage.removeItem('homeSchedules');
+      state     = JSON.parse(JSON.stringify(DEFAULT_STATE));
+      schedules = JSON.parse(JSON.stringify(DEFAULT_SCHEDULES));
+      saveState(); saveSchedules();
+      renderRooms(); renderSchedules();
+    }
+    let darkMode = JSON.parse(localStorage.getItem('darkMode')) ?? true;
+
+    function saveState() {
+      localStorage.setItem('homeState', JSON.stringify(state));
+    }
+    function saveSchedules() {
+      localStorage.setItem('homeSchedules', JSON.stringify(schedules));
+    }
+
+    // ===== RENDER ROOMS =====
+    function renderRooms() {
+      const grid = document.getElementById('roomsGrid');
+      grid.innerHTML = '';
+
+      for (const [roomKey, meta] of Object.entries(ROOM_META)) {
+        const roomState = state[roomKey];
+        const hasActive = meta.lamps.some((_, i) => roomState[`lamp${i + 1}`]);
+
+        const card = document.createElement('div');
+        card.className = `room-card${hasActive ? ' has-active' : ''}`;
+        card.id = `room-${roomKey}`;
+
+        // Lamps HTML
+        const lampsHtml = meta.lamps.map((name, i) => {
+          const key = `lamp${i + 1}`;
+          const on = roomState[key];
+          return `
+            <button class="lamp-btn${on ? ' on' : ''}"
+              onclick="toggleLamp('${roomKey}', '${key}')"
+              title="${name}">
+              <span class="lamp-icon">💡</span>
+              <span>${name}</span>
+            </button>`;
+        }).join('');
+
+        card.innerHTML = `
+          <div class="room-header">
+            <div class="room-name-area">
+              <span class="room-icon">${meta.icon}</span>
+              <span class="room-name">${meta.label}</span>
+            </div>
+            <div class="room-temp">
+              <div class="temp-controls">
+                <button class="temp-btn" onclick="changeTemp('${roomKey}', 1)">▲</button>
+                <button class="temp-btn" onclick="changeTemp('${roomKey}', -1)">▼</button>
+              </div>
+              <span class="temp-display">${roomState.temp}°C</span>
+            </div>
+          </div>
+          <div class="lamps-section">
+            <div class="lamps-label">Verlichting</div>
+            <div class="lamps-grid">${lampsHtml}</div>
+          </div>`;
+
+        grid.appendChild(card);
+      }
+
+      updateStatusBar();
+    }
+
+    // ===== TOGGLE LAMP =====
+    function toggleLamp(room, lampKey) {
+      state[room][lampKey] = !state[room][lampKey];
+      saveState();
+      renderRooms();
+    }
+
+    // ===== TEMPERATURE =====
+    function changeTemp(room, delta) {
+      state[room].temp = Math.min(30, Math.max(10, state[room].temp + delta));
+      saveState();
+      renderRooms();
+    }
+
+    // ===== STATUS BAR =====
+    function updateStatusBar() {
+      let total = 0;
+      for (const [roomKey, meta] of Object.entries(ROOM_META)) {
+        meta.lamps.forEach((_, i) => {
+          if (state[roomKey][`lamp${i + 1}`]) total++;
+        });
+      }
+      document.getElementById('active-count').textContent =
+        total === 0 ? 'Geen apparaten actief' :
+        total === 1 ? '1 apparaat actief' :
+        `${total} apparaten actief`;
+    }
+
+    // ===== CLOCK =====
+    function updateClock() {
+      const now = new Date();
+      document.getElementById('clock').textContent =
+        now.toLocaleTimeString('nl-BE', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    // ===== DARK MODE =====
+    function applyDarkMode() {
+      const btn = document.getElementById('darkToggle');
+      if (darkMode) {
+        document.body.classList.remove('light-mode');
+        btn.classList.add('active');
+        document.getElementById('darkIcon').textContent = '🌙';
+        document.getElementById('darkLabel').textContent = 'Dark';
+      } else {
+        document.body.classList.add('light-mode');
+        btn.classList.remove('active');
+        document.getElementById('darkIcon').textContent = '☀️';
+        document.getElementById('darkLabel').textContent = 'Light';
+      }
+    }
+    function toggleDarkMode() {
+      darkMode = !darkMode;
+      localStorage.setItem('darkMode', JSON.stringify(darkMode));
+      applyDarkMode();
+    }
+
+    // ===== ENERGY CHART =====
+    function buildChart() {
+      const days = ['Ma', 'Di', 'Wo', 'Do', 'Vr', 'Za', 'Zo'];
+      const data = days.map(() => +(2 + Math.random() * 6).toFixed(2));
+
+      const ctx = document.getElementById('energyChart').getContext('2d');
+      new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: days,
+          datasets: [{
+            label: 'kWh',
+            data,
+            borderColor: '#7c3aed',
+            backgroundColor: 'rgba(124,58,237,0.12)',
+            borderWidth: 2.5,
+            pointBackgroundColor: '#a78bfa',
+            pointRadius: 5,
+            pointHoverRadius: 7,
+            fill: true,
+            tension: 0.4,
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              backgroundColor: '#1a1a2e',
+              borderColor: '#7c3aed',
+              borderWidth: 1,
+              titleColor: '#a78bfa',
+              bodyColor: '#f1f5f9',
+              callbacks: { label: ctx => ` ${ctx.parsed.y} kWh` }
+            }
+          },
+          scales: {
+            x: {
+              grid: { color: 'rgba(255,255,255,0.05)' },
+              ticks: { color: '#94a3b8', font: { size: 12 } }
+            },
+            y: {
+              grid: { color: 'rgba(255,255,255,0.05)' },
+              ticks: { color: '#94a3b8', font: { size: 12 }, callback: v => v + ' kWh' },
+              beginAtZero: true
+            }
+          }
+        }
+      });
+    }
+
+    // ===== SCHEDULE =====
+    function renderSchedules() {
+      const list = document.getElementById('scheduleList');
+      list.innerHTML = '';
+
+      schedules.forEach((s, idx) => {
+        const item = document.createElement('div');
+        item.className = 'schedule-item';
+
+        // Room select
+        const roomSelect = document.createElement('select');
+        Object.entries(ROOM_META).forEach(([key, meta]) => {
+          const opt = document.createElement('option');
+          opt.value = key;
+          opt.textContent = meta.label;
+          if (key === s.room) opt.selected = true;
+          roomSelect.appendChild(opt);
+        });
+        roomSelect.onchange = e => { schedules[idx].room = e.target.value; saveSchedules(); };
+
+        // Time input
+        const timeInput = document.createElement('input');
+        timeInput.type = 'time';
+        timeInput.value = s.time;
+        timeInput.onchange = e => { schedules[idx].time = e.target.value; saveSchedules(); };
+
+        // Action badge (click to toggle)
+        const badge = document.createElement('div');
+        badge.className = `schedule-action-badge ${s.action}`;
+        badge.textContent = s.action === 'on' ? '💡 Aan' : '🔴 Uit';
+        badge.style.cursor = 'pointer';
+        badge.title = 'Klik om te wisselen';
+        badge.onclick = () => {
+          schedules[idx].action = schedules[idx].action === 'on' ? 'off' : 'on';
+          saveSchedules();
+          renderSchedules();
+        };
+
+        // Delete
+        const del = document.createElement('button');
+        del.className = 'schedule-delete';
+        del.textContent = '✕';
+        del.onclick = () => { schedules.splice(idx, 1); saveSchedules(); renderSchedules(); };
+
+        item.appendChild(roomSelect);
+        item.appendChild(timeInput);
+        item.appendChild(badge);
+        item.appendChild(del);
+        list.appendChild(item);
+      });
+    }
+
+    function addSchedule() {
+      schedules.push({ room: 'living', time: '08:00', action: 'on' });
+      saveSchedules();
+      renderSchedules();
+    }
+
+    // ===== SCHEDULE RUNNER =====
+    function checkSchedules() {
+      const now = new Date();
+      const hhmm = now.toTimeString().slice(0, 5);
+      schedules.forEach(s => {
+        if (s.time === hhmm) {
+          const meta = ROOM_META[s.room];
+          meta.lamps.forEach((_, i) => {
+            state[s.room][`lamp${i + 1}`] = s.action === 'on';
+          });
+          saveState();
+          renderRooms();
+        }
+      });
+    }
+    setInterval(checkSchedules, 30000);
+
+    // ===== INIT =====
+    applyDarkMode();
+    renderRooms();
+    buildChart();
+    renderSchedules();
+  </script>
+</body>
+</html>
